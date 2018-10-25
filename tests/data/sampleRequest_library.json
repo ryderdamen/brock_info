@@ -1,0 +1,29 @@
+{
+    "responseId": "34e1ea-15b-4f6a-a74-acf71ac675",
+    "queryResult": {
+      "queryText": "How busy is the library right now?",
+      "parameters": {
+        "libraryFloor": ""
+      },
+      "allRequiredParamsPresent": true,
+      "fulfillmentMessages": [
+        {
+          "text": {
+            "text": [
+              ""
+            ]
+          }
+        }
+      ],
+      "intent": {
+        "name": "projects/brocku-bot/agent/intents/67a8605c-bfd2-4e46-860c-23e4b713d5b2",
+        "displayName": "get_library_occupancy"
+      },
+      "intentDetectionConfidence": 1,
+      "languageCode": "en"
+    },
+    "originalDetectIntentRequest": {
+      "payload": {}
+    },
+    "session": ""
+  }
