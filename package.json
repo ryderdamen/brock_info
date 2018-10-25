@@ -1,0 +1,31 @@
+{
+  "name": "brockdialogflow",
+  "version": "1.0.0",
+  "description": "DialogFlow Fufillment for BrockUniversity App",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryderdamen/brock-dialogflow.git"
+  },
+  "keywords": [
+    "Brock-University"
+  ],
+  "author": "Ryder Damen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ryderdamen/brock-dialogflow/issues"
+  },
+  "homepage": "https://github.com/ryderdamen/brock-dialogflow#readme",
+  "dependencies": {
+    "actions-on-google": "*",
+    "dialogflow": "*",
+    "dialogflow-fulfillment": "^0.6.1",
+    "es6-promise": "^4.2.5",
+    "firebase-admin": "*",
+    "firebase-functions": "*",
+    "isomorphic-fetch": "^2.2.1"
+  }
+}
