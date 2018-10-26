@@ -1,8 +1,10 @@
 const functions = require('firebase-functions');
-const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem} = require('actions-on-google')
+const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem, Carousel} = require('actions-on-google')
 const app = dialogflow()
 const fetch = require('isomorphic-fetch')
 const config = requre('./config')
+const slugify = require('slugify')
+
 
 const defaultErrorResponse = "Sorry, I wasn't able to get that info. Try back later."
 const defaultImageUrl = "https://brocku.ca/media-room/wp-content/uploads/sites/61/brocku-384x232.png"
@@ -109,6 +111,77 @@ function getEvents(conv, params) {
 }
 
 
+
+/** Main handler for getting food venues
+ * 
+ * @param {*} agent 
+ * @param {*} params 
+ */
+function getFoodVenues(conv, params) {
+    return fetchFromBrockApi('food').then((apiResponse => {
+        // Most recent 10 events
+        var venues = apiResponse['food_venues'].slice(0,10)
+        var foodCarouselItems = {}
+        venues.map((venue) => {
+            let slug = slugify(venue['name'])
+            let venueDetails = {
+                title: venue['name'],
+                description: venue['description'],
+                image: new Image({
+                  url: venue['thumbnail_url'] || defaultImageUrl,
+                  alt: 'A photo of ' + venue['name'],
+                }),
+            }
+            foodCarouselItems[slug] = venueDetails
+        })
+        conv.ask(`Here are a few places you can grab a bite.`)
+        conv.ask(new Carousel({items: foodCarouselItems}))
+    })).catch((apiError) => {
+        console.error('Unable to retrieve response: ' + err)
+        conv.ask(defaultErrorResponse)
+    })
+}
+
+
+function getFoodVenueDetails(conv, params) {
+    return fetchFromBrockApi('food').then((apiResponse => {
+        // Most recent 10 events
+        var allVenues = apiResponse['food_venues']
+        let selectedSlug = app.getSelectedOption()
+        let mapBaseUrl = "https://www.google.com/maps/@"
+        allVenues.map((venue) => {
+            if ( slugify(venue['name']) == selectedSlug ) {
+                conv.ask(`Here's some more info:`)
+                conv.ask(new BasicCard({
+                    text: venue['description'],
+                    subtitle: venue['building_name'],
+                    title: venue['name'],
+                    buttons: [
+                        new Button({
+                            title: 'View Location',
+                            url: mapBaseUrl + venue['latitude'] + ',' + venue['longitude'],
+                        }), 
+                        new Button({
+                            title: 'Website',
+                            url: venue['main_url'] || 'https://brocku.ca'
+                        })
+                    ],
+                    image: new Image({
+                        url: venue['image_url'],
+                        alt: 'Photo of ' + venue['name'],
+                    }),
+                    display: 'CROPPED',
+                    }));
+                return
+            }
+        })
+    })).catch((apiError) => {
+        console.error('Unable to retrieve response: ' + err)
+        conv.ask(defaultErrorResponse)
+    })
+}
+
+
 // Intent Mapping
 app.intent('get_library_occupancy', (conv, params) => {
     return getLibraryOccupancy(conv, params)
@@ -116,6 +189,14 @@ app.intent('get_library_occupancy', (conv, params) => {
 
 app.intent('get_events', (conv, params) => {
     return getEvents(conv, params)
+})
+
+app.intent('get_food_venues', (conv, params) => {
+    return getFoodVenues(conv, params)
+})
+
+app.intent('get_food_venues_details', (conv, params) => {
+    return getFoodVenueDetails(conv, params)
 })
 
 // Intent in Dialogflow called `Goodbye`
