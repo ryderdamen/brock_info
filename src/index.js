@@ -77,6 +77,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
      * @param {*} agent 
      */
     function getEvents(agent) {
+        
         agent.add(`Sorry, events are currently unavailable`)
         agent.add(new Card({
             title: `Title: this is a card title`,
