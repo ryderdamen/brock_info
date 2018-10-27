@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem, Carousel} = require('actions-on-google')
+const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem, Carousel, Suggestions, List} = require('actions-on-google')
 const app = dialogflow()
 const fetch = require('isomorphic-fetch')
 const config = requre('./config')
@@ -71,8 +71,8 @@ function getLibraryOccupancy(conv, params) {
                 return [floor['floor'], floor['status']]
             }),
           }))
-    }).catch((err) => {
-        console.error('Unable to retrieve response: ' + err)
+    }).catch((apiError) => {
+        console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
     })
 }
@@ -105,7 +105,7 @@ function getEvents(conv, params) {
             items: eventCarouselItems,
         }))
     })).catch((apiError) => {
-        console.error('Unable to retrieve response: ' + err)
+        console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
     })
 }
@@ -137,7 +137,7 @@ function getFoodVenues(conv, params) {
         conv.ask(`Here are a few places you can grab a bite.`)
         conv.ask(new Carousel({items: foodCarouselItems}))
     })).catch((apiError) => {
-        console.error('Unable to retrieve response: ' + err)
+        console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
     })
 }
@@ -171,15 +171,59 @@ function getFoodVenueDetails(conv, params) {
                         alt: 'Photo of ' + venue['name'],
                     }),
                     display: 'CROPPED',
-                    }));
+                    }))
                 return
             }
         })
+        conv.ask(`I couldn't find that venue. You requested: ` + selectedSlug)
     })).catch((apiError) => {
-        console.error('Unable to retrieve response: ' + err)
+        console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
     })
 }
+
+
+
+
+function getClubs(conv, params) {
+    return fetchFromBrockApi('clubs').then((apiResponse => {
+        // Most recent 10 events
+        var allClubs = apiResponse['clubs']
+        let searchTopic = params['searchTopic']
+        if (searchTopic === '') {
+            conv.ask(`There are currently ` + allClubs.length + ` active clubs at Brock. Try asking about a specific one.`)
+            conv.ask(new Suggestions(['Sports Clubs', 'Musical Theatre Clubs']))
+            return
+        }
+        // Filter the clubs to only those containing the search topic
+        var foundClubs = allClubs.filter((club) => {
+            return JSON.stringify(club).toLowerCase().indexOf(searchTopic) > -1
+        })
+        if ( ! foundClubs ) {
+            conv.ask(`Sorry, I could find any clubs related to ` + searchTopic + `. Try saying it another way.`)
+            return
+        }
+        // Map to Object for List structure
+        foundClubsObject = {}
+        foundClubs.map((club) => {
+            foundClubsObject[slugify(club['name'])] = {
+                title: club['name'],
+                description: club['description'],
+                image: new Image({
+                  url: club['profile_photo'] || defaultImageUrl,
+                  alt: 'Profile photo for ' + club['name'],
+                }),
+            }
+        })
+        conv.ask(`I found ` + foundClubs.length + ` clubs that might be related. Here are a few:`)
+        conv.ask(new List({ title: searchTopic + ' Clubs', items: foundClubsObject }))
+    })).catch((apiError) => {
+        console.error('Unable to retrieve response: ' + apiError)
+        conv.ask(defaultErrorResponse)
+    })
+}
+
+
 
 
 // Intent Mapping
@@ -199,6 +243,10 @@ app.intent('get_food_venues_details', (conv, params) => {
     return getFoodVenueDetails(conv, params)
 })
 
+app.intent('get_clubs', (conv, params) => {
+    return getClubs(conv, params)
+})
+
 // Intent in Dialogflow called `Goodbye`
 app.intent('Goodbye', conv => {
     conv.close('See you later!')
@@ -208,4 +256,4 @@ app.intent('Default Fallback Intent', conv => {
     conv.ask(`I didn't understand. Can you tell me something else?`)
 })
 
-exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app)
