@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem, Carousel, Suggestions, List} = require('actions-on-google')
+const {dialogflow, Image, Table, BrowseCarousel, BrowseCarouselItem, Carousel, Suggestions, List, BasicCard, Button} = require('actions-on-google')
 const app = dialogflow()
 const fetch = require('isomorphic-fetch')
 const config = requre('./config')
@@ -10,6 +10,14 @@ const defaultErrorResponse = "Sorry, I wasn't able to get that info. Try back la
 const defaultImageUrl = "https://brocku.ca/media-room/wp-content/uploads/sites/61/brocku-384x232.png"
 
 
+
+function titleCase(str) {
+    str = str.toLowerCase().split(' ');
+    for (var i = 0; i < str.length; i++) {
+        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1); 
+    }
+    return str.join(' ');
+}
 
 /** Fetches an endpoint from the Brock API using the config file
  * 
@@ -147,8 +155,10 @@ function getFoodVenueDetails(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
         // Most recent 10 events
         var allVenues = apiResponse['food_venues']
-        let selectedSlug = app.getSelectedOption()
+        let selectedSlug = conv.arguments.get('OPTION')
+        console.error('selected slub is ' + selectedSlug)
         let mapBaseUrl = "https://www.google.com/maps/@"
+        let foundVenue = false
         allVenues.map((venue) => {
             if ( slugify(venue['name']) == selectedSlug ) {
                 conv.ask(`Here's some more info:`)
@@ -157,10 +167,6 @@ function getFoodVenueDetails(conv, params) {
                     subtitle: venue['building_name'],
                     title: venue['name'],
                     buttons: [
-                        new Button({
-                            title: 'View Location',
-                            url: mapBaseUrl + venue['latitude'] + ',' + venue['longitude'],
-                        }), 
                         new Button({
                             title: 'Website',
                             url: venue['main_url'] || 'https://brocku.ca'
@@ -172,10 +178,12 @@ function getFoodVenueDetails(conv, params) {
                     }),
                     display: 'CROPPED',
                     }))
-                return
+                foundVenue = true
             }
         })
-        conv.ask(`I couldn't find that venue. You requested: ` + selectedSlug)
+        if (foundVenue === false) {
+            conv.ask(`I couldn't find that venue.`)
+        }
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
@@ -189,7 +197,7 @@ function getClubs(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
         // Most recent 10 events
         var allClubs = apiResponse['clubs']
-        let searchTopic = params['searchTopic']
+        let searchTopic = params['searchTopic'].toLowerCase()
         if (searchTopic === '') {
             conv.ask(`There are currently ` + allClubs.length + ` active clubs at Brock. Try asking about a specific one.`)
             conv.ask(new Suggestions(['Sports Clubs', 'Musical Theatre Clubs']))
@@ -199,7 +207,7 @@ function getClubs(conv, params) {
         var foundClubs = allClubs.filter((club) => {
             return JSON.stringify(club).toLowerCase().indexOf(searchTopic) > -1
         })
-        if ( ! foundClubs ) {
+        if ( (foundClubs === undefined || foundClubs.length == 0) ) {
             conv.ask(`Sorry, I could find any clubs related to ` + searchTopic + `. Try saying it another way.`)
             return
         }
@@ -215,8 +223,8 @@ function getClubs(conv, params) {
                 }),
             }
         })
-        conv.ask(`I found ` + foundClubs.length + ` clubs that might be related. Here are a few:`)
-        conv.ask(new List({ title: searchTopic + ' Clubs', items: foundClubsObject }))
+        conv.ask(`I found ` + foundClubs.length + ` clubs mentioning ` + searchTopic + `. Here are a few:`)
+        conv.ask(new List({ title: titleCase(searchTopic) + ' Clubs', items: foundClubsObject }))
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
@@ -224,36 +232,21 @@ function getClubs(conv, params) {
 }
 
 
-
-
 // Intent Mapping
 app.intent('get_library_occupancy', (conv, params) => {
     return getLibraryOccupancy(conv, params)
 })
-
 app.intent('get_events', (conv, params) => {
     return getEvents(conv, params)
 })
-
 app.intent('get_food_venues', (conv, params) => {
     return getFoodVenues(conv, params)
 })
-
 app.intent('get_food_venues_details', (conv, params) => {
     return getFoodVenueDetails(conv, params)
 })
-
 app.intent('get_clubs', (conv, params) => {
     return getClubs(conv, params)
-})
-
-// Intent in Dialogflow called `Goodbye`
-app.intent('Goodbye', conv => {
-    conv.close('See you later!')
-})
-
-app.intent('Default Fallback Intent', conv => {
-    conv.ask(`I didn't understand. Can you tell me something else?`)
 })
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app)
