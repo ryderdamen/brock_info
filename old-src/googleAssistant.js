@@ -13,13 +13,18 @@ const defaultImageUrl = "https://brocku.ca/media-room/wp-content/uploads/sites/6
 
 
 
+/** Concerts a string to title case
+ * 
+ * @param {*} str 
+ */
 function titleCase(str) {
-    str = str.toLowerCase().split(' ');
+    str = str.toLowerCase().split(' ')
     for (var i = 0; i < str.length; i++) {
-        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1); 
+        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
     }
-    return str.join(' ');
+    return str.join(' ')
 }
+
 
 /** Fetches an endpoint from the Brock API using the config file
  * 
@@ -65,7 +70,7 @@ function getLibraryOccupancy(conv, params) {
                 }
             }
         }
-        if (!conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT')) {
+        if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
             // The user doesn't have a screen, return a text response
             let speech = res['library'].map((floor) => {
                 return " Floor " + floor['floor'] + " is " + floor['status'].toLowerCase()
@@ -90,13 +95,26 @@ function getLibraryOccupancy(conv, params) {
 
 /** Retrieves all current events
  * 
- * @param {*} agent 
- * @param {*} params 
+ * @param {*} agent
+ * @param {*} params
  */
 function getEvents(conv, params) {
     return fetchFromBrockApi('all-events').then((apiResponse => {
+       
         // Most recent 10 events
         var events = apiResponse['events'].slice(0,10)
+    
+        // User doesn't have a screen, read the events.
+        if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
+            let speech = 'Here are the most recent 10 events. Visit Experience BU for more information. '
+            let speechEvents = events.map((event) => {
+                return event['event_name'] + ' happening ' + moment(event['start_datetime']).calendar() + '. '
+            })
+            speech += speechEvents
+            conv.ask(speech)
+            return
+        }
+
         var eventCarouselItems = events.map((event) => {
             var descriptionText = moment(event['start_datetime']).calendar() + `  \n`
             descriptionText += event['location'] + `  \n`
@@ -112,7 +130,6 @@ function getEvents(conv, params) {
                 footer: 'Hosted By: ' + event['organization_name'],
             })
         })
-
         conv.ask(`Here are the most recent events.`)
         conv.ask(new BrowseCarousel({
             items: eventCarouselItems,
@@ -133,6 +150,18 @@ function getFoodVenues(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
         // Most recent 10 events
         var venues = apiResponse['food_venues'].slice(0,10)
+
+        // User doesn't have a screen, read all the food venues.
+        if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
+            let speech = 'Here is a list of food venues on campus. '
+            let foodVenues = apiResponse['food_venues'].map((venue) => {
+                return venue['name'] + ' located in ' + venue['building_name'] + '. '
+            })
+            speech += foodVenues
+            conv.ask(speech)
+            return
+        }
+
         var foodCarouselItems = {}
         venues.map((venue) => {
             let slug = slugify(venue['name'])
@@ -250,8 +279,7 @@ function getClubs(conv, params) {
  * @param {*} conv 
  * @param {*} params 
  */
-
-function getClubDetails(conv, params) {
+function getClubsDetails(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
         var allClubs = apiResponse['clubs']
         let selectedSlug = conv.arguments.get('OPTION')
@@ -327,6 +355,9 @@ app.intent('get_food_venues_details', (conv, params) => {
 })
 app.intent('get_clubs', (conv, params) => {
     return getClubs(conv, params)
+})
+app.intent('get_clubs_details', (conv, params) => {
+    return getClubsDetails(conv, params)
 })
 app.intent('get_meta', (conv, params) => {
     return getMeta(conv, params)
