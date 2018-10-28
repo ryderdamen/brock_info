@@ -4,15 +4,16 @@
 
  // Imports
 const {dialogflow} = require('actions-on-google')
-const functions = require('firebase-functions');
-const app = dialogflow()
-const getLibraryOccupancy = require('./library')
-const getEvents = require('./events')
+const {functions} = require('firebase-functions');
+const {getLibraryOccupancy} = require('./library')
+const {getEvents} = require('./events')
 const {getFoodVenues, getFoodVenueDetails} = require('./food')
 const {getClubs, getClubsDetails} = require('./clubs')
 
+// Instantiate App
+const app = dialogflow()
 
-// Intent Mapping
+// Map Intents
 app.intent('get_library_occupancy', (conv, params) => {
     return getLibraryOccupancy(conv, params)
 })
@@ -33,5 +34,5 @@ app.intent('get_clubs_details', (conv, params) => {
 })
 
 
-// Exports
-exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app)
+// // Export on https call
+exports.brockAssistantFulfillment = functions.https.onRequest(app)
