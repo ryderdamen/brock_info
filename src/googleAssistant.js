@@ -4,6 +4,8 @@ const app = dialogflow()
 const fetch = require('isomorphic-fetch')
 const config = requre('./config')
 const slugify = require('slugify')
+const moment = require('moment');
+
 
 
 const defaultErrorResponse = "Sorry, I wasn't able to get that info. Try back later."
@@ -43,7 +45,7 @@ function fetchFromBrockApi(endpoint, queryString="") {
 }
 
 
-/** Handler for fufilling library occupancy request
+/** Fufilling library occupancy request for all floors, or specific floor
  * 
  * @since 1.0.0
  * @param {*} agent 
@@ -86,7 +88,7 @@ function getLibraryOccupancy(conv, params) {
 }
 
 
-/** Main handler for getting events
+/** Retrieves all current events
  * 
  * @param {*} agent 
  * @param {*} params 
@@ -96,10 +98,13 @@ function getEvents(conv, params) {
         // Most recent 10 events
         var events = apiResponse['events'].slice(0,10)
         var eventCarouselItems = events.map((event) => {
+            var descriptionText = moment(event['start_datetime']).calendar() + `  \n`
+            descriptionText += event['location'] + `  \n`
+            descriptionText += event['description']
             return new BrowseCarouselItem({
                 title: event['event_name'],
                 url: event['event_url'],
-                description: event['description'],
+                description: descriptionText,
                 image: new Image({
                     url: event['thumbnail_url'] || defaultImageUrl,
                     alt: 'Event Flyer',
@@ -119,8 +124,7 @@ function getEvents(conv, params) {
 }
 
 
-
-/** Main handler for getting food venues
+/** Main handler for getting all food venues
  * 
  * @param {*} agent 
  * @param {*} params 
@@ -151,6 +155,11 @@ function getFoodVenues(conv, params) {
 }
 
 
+/** Returns more specific details about a food venue
+ * 
+ * @param {*} conv 
+ * @param {*} params 
+ */
 function getFoodVenueDetails(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
         // Most recent 10 events
@@ -160,7 +169,7 @@ function getFoodVenueDetails(conv, params) {
         let mapBaseUrl = "https://www.google.com/maps/@"
         let foundVenue = false
         allVenues.map((venue) => {
-            if ( slugify(venue['name']) == selectedSlug ) {
+            if ( slugify(venue['name']) === selectedSlug ) {
                 conv.ask(`Here's some more info:`)
                 conv.ask(new BasicCard({
                     text: venue['description'],
@@ -192,7 +201,11 @@ function getFoodVenueDetails(conv, params) {
 
 
 
-
+/** Handles retrieval of all clubs, and search of clubs
+ * 
+ * @param {*} conv 
+ * @param {*} params 
+ */
 function getClubs(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
         // Most recent 10 events
@@ -232,6 +245,73 @@ function getClubs(conv, params) {
 }
 
 
+/** Retrieves and returns club details when a specific club is selected
+ * 
+ * @param {*} conv 
+ * @param {*} params 
+ */
+
+function getClubDetails(conv, params) {
+    return fetchFromBrockApi('clubs').then((apiResponse => {
+        var allClubs = apiResponse['clubs']
+        let selectedSlug = conv.arguments.get('OPTION')
+        let foundClub = false
+        allVenues.map((club) => {
+            if ( slugify(club['name']) === selectedSlug ) {
+                conv.ask(`Here's some more info:`)
+                conv.ask(new BasicCard({
+                    text: venue['description'],
+                    subtitle: venue['building_name'],
+                    title: venue['name'],
+                    buttons: [
+                        new Button({
+                            title: 'Website',
+                            url: venue['main_url'] || 'https://brocku.ca'
+                        })
+                    ],
+                    image: new Image({
+                        url: venue['image_url'],
+                        alt: 'Photo of ' + venue['name'],
+                    }),
+                    display: 'CROPPED',
+                    }))
+                foundClub = true
+            }
+        })
+        if (foundClub === false) {
+            conv.ask(`I couldn't find that club.`)
+        }
+    })).catch((apiError) => {
+        console.error('Unable to retrieve response: ' + apiError)
+        conv.ask(defaultErrorResponse)
+    })
+}
+
+
+/** Gets the current events happening for a specific club
+ * 
+ * @param {*} conv 
+ * @param {*} params 
+ */
+function getClubEvents(conv, params) {
+
+}
+
+
+/** Returns meta-data about the app
+ * 
+ * @param {*} conv 
+ * @param {*} params 
+ */
+function getMeta(conv, params) {
+    let suggestions = [
+        'How busy is the library?'
+    ]
+    conv.ask(`Here are a few things you can ask:`)
+    conv.ask(new Suggestions(suggestions))
+}
+
+
 // Intent Mapping
 app.intent('get_library_occupancy', (conv, params) => {
     return getLibraryOccupancy(conv, params)
@@ -247,6 +327,9 @@ app.intent('get_food_venues_details', (conv, params) => {
 })
 app.intent('get_clubs', (conv, params) => {
     return getClubs(conv, params)
+})
+app.intent('get_meta', (conv, params) => {
+    return getMeta(conv, params)
 })
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app)
