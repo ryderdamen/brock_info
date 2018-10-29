@@ -2,7 +2,7 @@
  * 
  */
 
-const Table = require('actions-on-google')
+const {Table} = require('actions-on-google')
 const {defaultErrorResponse} = require('./responses')
 const {fetchFromBrockApi} = require('./helpers')
 
