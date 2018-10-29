@@ -5,7 +5,7 @@
 const {Image, BrowseCarousel, BrowseCarouselItem} = require('actions-on-google')
 const {fetchFromBrockApi} = require('./helpers')
 const {defaultErrorResponse, defaultImageUrl} = require('./responses')
-const moment = require('moment');
+const moment = require('moment')
 
 
 
@@ -16,15 +16,15 @@ const moment = require('moment');
  */
 module.exports.getEvents = function(conv, params) {
     return fetchFromBrockApi('all-events').then((apiResponse => {
-    
-        // Most recent 10 events
-        var events = apiResponse['events'].slice(0,10)
+
+        const eventLimit = 10
+        var events = apiResponse['events'].slice(0, eventLimit)
     
         // User doesn't have a screen, read the events.
         if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
-            let speech = 'Here are the most recent 10 events. Visit Experience BU for more information. '
+            let speech = `Here are the most recent ` + eventLimit + ` events. Visit Experience BU for more information. `
             let speechEvents = events.map((event) => {
-                return event['event_name'] + ' happening ' + moment(event['start_datetime']).calendar() + '. '
+                return event['event_name'] + ` happening ` + moment(event['start_datetime']).calendar() + `. `
             })
             speech += speechEvents
             conv.ask(speech)
@@ -41,9 +41,9 @@ module.exports.getEvents = function(conv, params) {
                 description: descriptionText,
                 image: new Image({
                     url: event['thumbnail_url'] || defaultImageUrl,
-                    alt: 'Event Flyer',
+                    alt: `Event flyer for ` + event['event_name'],
                 }),
-                footer: 'Hosted By: ' + event['organization_name'],
+                footer: `Hosted by: ` + event['organization_name'],
             })
         })
         conv.ask(`Here are the most recent events.`)

@@ -6,7 +6,7 @@ const {Image, Carousel, BasicCard, Button} = require('actions-on-google')
 const {fetchFromBrockApi} = require('./helpers')
 const slugify = require('slugify')
 const {defaultErrorResponse, defaultImageUrl} = require('./responses')
-
+const moment = require('moment')
 
 
 /** Main handler for getting all food venues
@@ -67,10 +67,12 @@ module.exports.getFoodVenueDetails = function(conv, params) {
         let foundVenue = false
         allVenues.map((venue) => {
             if ( slugify(venue['name']) === selectedSlug ) {
+                let descriptionText = `Today's hours: ` + getTodaysHours(venue)
+                descriptionText += venue['description']
                 conv.ask(`Here's some more info:`)
                 conv.ask(new BasicCard({
                     text: venue['description'],
-                    subtitle: venue['building_name'],
+                    subtitle: venue['building_name'] + ` (Floor ` + venue['floor_number'] + `)`,
                     title: venue['name'],
                     buttons: [
                         new Button({
@@ -94,4 +96,21 @@ module.exports.getFoodVenueDetails = function(conv, params) {
         console.error('Unable to retrieve response: ' + apiError)
         conv.ask(defaultErrorResponse)
     })
+}
+
+
+
+/** Gets the current day's hours for the particular venue
+ * 
+ * @param {*} venue 
+ */
+function getTodaysHours(venue) {
+    let currentWeekday = moment(mydate).format('dddd').toLowerCase()
+    let openTime = venue['opening_hours'][currentWeekday + 'open']
+    let closeTime = venue['opening_hours'][currentWeekday + 'close']
+    let todaysHours = openTime + ` - ` + closeTime
+    if (venue['opening_hours']['specialmessage'] !== "") {
+        todaysHours += venue['opening_hours']['specialmessage']
+    }
+    return todaysHours
 }

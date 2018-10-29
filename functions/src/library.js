@@ -32,7 +32,7 @@ module.exports.getLibraryOccupancy = function(conv, params) {
             let speech = res['library'].map((floor) => {
                 return " Floor " + floor['floor'] + " is " + floor['status'].toLowerCase()
             })
-            conv.ask(`Here's how all the library floors are looking right now.` + speech)
+            conv.ask(`Here's how all the library floors are looking right now.` + speech + '.')
             return
         }
         conv.ask(`Here's how all the library floors are looking right now.`)
