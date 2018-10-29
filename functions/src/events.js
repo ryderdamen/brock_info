@@ -3,7 +3,7 @@
  */
 
 const {Image, BrowseCarousel, BrowseCarouselItem} = require('actions-on-google')
-const fetchFromBrockApi = require('./helpers')
+const {fetchFromBrockApi} = require('./helpers')
 const {defaultErrorResponse, defaultImageUrl} = require('./responses')
 const moment = require('moment');
 

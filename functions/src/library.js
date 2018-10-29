@@ -4,7 +4,7 @@
 
 const Table = require('actions-on-google')
 const {defaultErrorResponse} = require('./responses')
-const fetchFromBrockApi = require('./helpers')
+const {fetchFromBrockApi} = require('./helpers')
 
 
 /** Fufilling library occupancy request for all floors, or specific floor

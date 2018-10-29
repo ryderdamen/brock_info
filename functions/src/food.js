@@ -3,7 +3,7 @@
  */
 
 const {Image, Carousel, BasicCard, Button} = require('actions-on-google')
-const fetchFromBrockApi = require('./helpers')
+const {fetchFromBrockApi} = require('./helpers')
 const slugify = require('slugify')
 const {defaultErrorResponse, defaultImageUrl} = require('./responses')
 
