@@ -66,7 +66,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
         let foundVenue = false
         allVenues.map((venue) => {
             if ( slugify(venue['name']) === selectedSlug ) {
-                let descriptionText = `Today's hours: ` + getTodaysHours(venue)
+                let descriptionText = `Today's hours: ` + getTodaysHours(venue) + `  \n`
                 descriptionText += venue['description']
                 conv.ask(`Here's some more info:`)
                 conv.ask(new BasicCard({
@@ -96,7 +96,6 @@ module.exports.getFoodVenueDetails = function(conv, params) {
         conv.ask(defaultErrorResponse)
     })
 }
-
 
 
 /** Gets the current day's hours for the particular venue

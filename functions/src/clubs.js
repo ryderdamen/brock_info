@@ -62,22 +62,21 @@ module.exports.getClubsDetails = function(conv, params) {
         var allClubs = apiResponse['clubs']
         let selectedSlug = conv.arguments.get('OPTION')
         let foundClub = false
-        allVenues.map((club) => {
+        allClubs.map((club) => {
             if ( slugify(club['name']) === selectedSlug ) {
-                conv.ask(`Here's some more info:`)
+                conv.ask(`Here's what I know about ` + club['name'] + `:`)
                 conv.ask(new BasicCard({
-                    text: venue['description'],
-                    subtitle: venue['building_name'],
-                    title: venue['name'],
+                    text: club['description'],
+                    title: club['name'],
                     buttons: [
                         new Button({
-                            title: 'Website',
-                            url: venue['main_url'] || 'https://brocku.ca'
+                            title: 'More Info',
+                            url: club['exbu_profile'] || 'https://brocku.ca'
                         })
                     ],
                     image: new Image({
-                        url: venue['image_url'],
-                        alt: 'Photo of ' + venue['name'],
+                        url: club['profile_photo'],
+                        alt: 'Photo of ' + club['name'],
                     }),
                     display: 'CROPPED',
                     }))
