@@ -62,8 +62,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
         // Most recent 10 events
         var allVenues = apiResponse['food_venues']
         let selectedSlug = conv.arguments.get('OPTION')
-        console.error('selected slub is ' + selectedSlug)
-        let mapBaseUrl = "https://www.google.com/maps/@"
+        // let mapBaseUrl = "https://www.google.com/maps/@"
         let foundVenue = false
         allVenues.map((venue) => {
             if ( slugify(venue['name']) === selectedSlug ) {
@@ -71,7 +70,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
                 descriptionText += venue['description']
                 conv.ask(`Here's some more info:`)
                 conv.ask(new BasicCard({
-                    text: venue['description'],
+                    text: descriptionText,
                     subtitle: venue['building_name'] + ` (Floor ` + venue['floor_number'] + `)`,
                     title: venue['name'],
                     buttons: [
@@ -105,7 +104,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
  * @param {*} venue 
  */
 function getTodaysHours(venue) {
-    let currentWeekday = moment(mydate).format('dddd').toLowerCase()
+    let currentWeekday = moment().format('dddd').toLowerCase()
     let openTime = venue['opening_hours'][currentWeekday + 'open']
     let closeTime = venue['opening_hours'][currentWeekday + 'close']
     let todaysHours = openTime + ` - ` + closeTime
