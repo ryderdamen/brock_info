@@ -3,7 +3,7 @@
  */
 
 const Table = require('actions-on-google')
-const {defaultErrorResponse, defaultImageUrl} = require('./responses')
+const {defaultErrorResponse} = require('./responses')
 const fetchFromBrockApi = require('./helpers')
 
 
@@ -12,7 +12,7 @@ const fetchFromBrockApi = require('./helpers')
  * @since 1.0.0
  * @param {*} agent
  */
-function getLibraryOccupancy(conv, params) {
+module.exports.getLibraryOccupancy = function(conv, params) {
     return fetchFromBrockApi('wifi').then((res) => {
         let requestedFloor = params['libraryFloor'].toString()
         var floors = res['library']
@@ -48,6 +48,3 @@ function getLibraryOccupancy(conv, params) {
         conv.ask(defaultErrorResponse)
     })
 }
-
-
-module.exports.getLibraryOccupancy = getLibraryOccupancy

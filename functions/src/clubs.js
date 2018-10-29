@@ -13,7 +13,7 @@ const {defaultErrorResponse, defaultImageUrl} = require('./responses')
  * @param {*} conv 
  * @param {*} params 
  */
-function getClubs(conv, params) {
+module.exports.getClubs = function(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
         // Most recent 10 events
         var allClubs = apiResponse['clubs']
@@ -57,7 +57,7 @@ function getClubs(conv, params) {
  * @param {*} conv 
  * @param {*} params 
  */
-function getClubsDetails(conv, params) {
+module.exports.getClubsDetails = function(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
         var allClubs = apiResponse['clubs']
         let selectedSlug = conv.arguments.get('OPTION')
@@ -99,11 +99,6 @@ function getClubsDetails(conv, params) {
  * @param {*} conv 
  * @param {*} params 
  */
-function getClubEvents(conv, params) {
+module.exports.getClubEvents = function(conv, params) {
 
 }
-
-
-module.exports.getClubs = getClubs
-module.exports.getClubsDetails = getClubsDetails
-module.exports.getClubEvents = getClubEvents

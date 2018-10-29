@@ -1,8 +1,8 @@
 
 .PHONY: install
 install:
-	npm install
+	cd functions && npm install
 
 .PHONY: deploy
 deploy:
-	gcloud functions deploy brockAssistantFulfillment --source ./src --trigger-http --project brocku-bot
+	firebase deploy

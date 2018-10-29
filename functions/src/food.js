@@ -14,7 +14,7 @@ const {defaultErrorResponse, defaultImageUrl} = require('./responses')
  * @param {*} agent 
  * @param {*} params 
  */
-function getFoodVenues(conv, params) {
+module.exports.getFoodVenues = function(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
         // Most recent 10 events
         var venues = apiResponse['food_venues'].slice(0,10)
@@ -57,7 +57,7 @@ function getFoodVenues(conv, params) {
  * @param {*} conv 
  * @param {*} params 
  */
-function getFoodVenueDetails(conv, params) {
+module.exports.getFoodVenueDetails = function(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
         // Most recent 10 events
         var allVenues = apiResponse['food_venues']
@@ -95,7 +95,3 @@ function getFoodVenueDetails(conv, params) {
         conv.ask(defaultErrorResponse)
     })
 }
-
-
-module.exports.getFoodVenues = getFoodVenues
-module.exports.getFoodVenueDetails = getFoodVenueDetails

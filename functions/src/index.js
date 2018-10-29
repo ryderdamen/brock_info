@@ -3,8 +3,9 @@
  */
 
  // Imports
+
 const {dialogflow} = require('actions-on-google')
-const {functions} = require('firebase-functions');
+const functions = require('firebase-functions');
 const {getLibraryOccupancy} = require('./library')
 const {getEvents} = require('./events')
 const {getFoodVenues, getFoodVenueDetails} = require('./food')

@@ -14,7 +14,7 @@ const moment = require('moment');
  * @param {*} agent
  * @param {*} params
  */
-function getEvents(conv, params) {
+module.exports.getEvents = function(conv, params) {
     return fetchFromBrockApi('all-events').then((apiResponse => {
     
         // Most recent 10 events
@@ -55,6 +55,3 @@ function getEvents(conv, params) {
         conv.ask(defaultErrorResponse)
     })
 }
-
-
-module.exports.getEvents = getEvents

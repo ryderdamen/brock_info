@@ -1,14 +1,13 @@
 
 const fetch = require('isomorphic-fetch')
-const config = requre('./config')
-
+const config = require('./config')
 
 
 /** Concerts a string to title case
  * 
  * @param {*} str 
  */
-function titleCase(str) {
+module.exports.titleCase = function(str) {
     str = str.toLowerCase().split(' ')
     for (var i = 0; i < str.length; i++) {
         str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
@@ -24,7 +23,7 @@ function titleCase(str) {
  * @param {*} queryString 
  * @returns {Promise} a promise resolving to JSON response or rejecting false
  */
-function fetchFromBrockApi(endpoint, queryString="") {
+module.exports.fetchFromBrockApi = function(endpoint, queryString="") {
     let ep = config['api']['endpoints'][endpoint]
     let protocol = config['api']['protocol']
     let host = config['api']['hostname']
@@ -39,7 +38,3 @@ function fetchFromBrockApi(endpoint, queryString="") {
         throw error
     })
 }
-
-
-module.exports.fetchFromBrockApi = fetchFromBrockApi
-module.exports.titleCase = titleCase
