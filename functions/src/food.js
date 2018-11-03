@@ -6,7 +6,7 @@ const {Image, Carousel, BasicCard, Button} = require('actions-on-google')
 const {fetchFromBrockApi} = require('./helpers')
 const slugify = require('slugify')
 const {defaultErrorResponse, defaultImageUrl} = require('./defaults')
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 
 /** Main handler for getting all food venues
@@ -109,8 +109,8 @@ module.exports.getFoodVenueDetails = function(conv, params) {
  * 
  * @param {*} venue 
  */
-function getTodaysHours(venue, openOrClosed=false) {
-    let currentWeekday = moment().format('dddd').toLowerCase()
+function getTodaysHours(venue, openOrClosed = false) {
+    let currentWeekday = moment().tz("America/Toronto").format('dddd').toLowerCase()
     let openTime = venue['opening_hours'][currentWeekday + 'open']
     let closeTime = venue['opening_hours'][currentWeekday + 'close']
     // Account for isVenueOpen()
@@ -143,8 +143,8 @@ function venueIsOpen(venue) {
         return false
     }
     // Convert to moment objects and compare
-    let now = moment()
-    let open = moment(openTime, 'HH:mm')
-    let close = moment(closeTime, 'HH:mm')
+    let now = moment.tz('America/Toronto')
+    let open = moment.tz(openTime, 'HH:mm', 'America/Toronto')
+    let close = moment.tz(closeTime, 'HH:mm', 'America/Toronto')
     return now.isBetween(open, close)
 }
