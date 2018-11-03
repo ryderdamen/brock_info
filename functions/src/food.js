@@ -16,13 +16,19 @@ const moment = require('moment')
  */
 module.exports.getFoodVenues = function(conv, params) {
     return fetchFromBrockApi('food').then((apiResponse => {
-        // Most recent 10 events
-        var venues = apiResponse['food_venues'].slice(0,10)
+        var venues = apiResponse['food_venues']
+        venues = venues.filter((venue) => {
+            return venueIsOpen(venue)
+        }).slice(0,10)
+        if ( (venues === undefined || venues.length == 0) ) {
+            conv.ask(`Sorry, it looks like there aren't any places to eat open right now. Try again later.`)
+            return
+        }
 
         // User doesn't have a screen, read all the food venues.
         if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
-            let speech = `Here's a list of food venues on campus. `
-            let foodVenues = apiResponse['food_venues'].map((venue) => {
+            let speech = `Here's a list of food venues on campus that are open right now. `
+            let foodVenues = venues.map((venue) => {
                 return venue['name'] + ' located in ' + venue['building_name'] + '.'
             })
             speech += foodVenues.join(` `)
@@ -30,6 +36,7 @@ module.exports.getFoodVenues = function(conv, params) {
             return
         }
 
+        // Display the venues on screen
         var foodCarouselItems = {}
         venues.map((venue) => {
             let slug = slugify(venue['name'])
@@ -102,17 +109,42 @@ module.exports.getFoodVenueDetails = function(conv, params) {
  * 
  * @param {*} venue 
  */
-function getTodaysHours(venue) {
+function getTodaysHours(venue, openOrClosed=false) {
     let currentWeekday = moment().format('dddd').toLowerCase()
     let openTime = venue['opening_hours'][currentWeekday + 'open']
     let closeTime = venue['opening_hours'][currentWeekday + 'close']
+    // Account for isVenueOpen()
+    if (openOrClosed !== false) {
+        return [openTime, closeTime]
+    }
     if (openTime == "" && closeTime == "") {
         return "Closed for today."
     }
-
     let todaysHours = openTime + ` - ` + closeTime
     if (venue['opening_hours']['specialmessage'] !== "") {
         todaysHours += venue['opening_hours']['specialmessage']
     }
     return todaysHours
+}
+
+
+/** Checks if a venue is open or not
+ * 
+ * @since 1.0.0
+ * @param {*} venue 
+ * @returns {boolean} True - venue is open
+ */
+function venueIsOpen(venue) {
+    let hoursArray = getTodaysHours(venue, true)
+    let openTime = hoursArray[0]
+    let closeTime = hoursArray[1]
+    if (openTime == "" || closeTime == "") {
+        // Not enough data to determine if currently open
+        return false
+    }
+    // Convert to moment objects and compare
+    let now = moment()
+    let open = moment(openTime, 'HH:mm')
+    let close = moment(closeTime, 'HH:mm')
+    return now.isBetween(open, close)
 }
