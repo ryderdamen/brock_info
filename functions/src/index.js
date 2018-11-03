@@ -3,7 +3,6 @@
  */
 
  // Imports
-
 const {dialogflow} = require('actions-on-google')
 const functions = require('firebase-functions');
 const {getLibraryOccupancy} = require('./library')
@@ -33,7 +32,6 @@ app.intent('get_clubs', (conv, params) => {
 app.intent('get_clubs_details', (conv, params) => {
     return getClubsDetails(conv, params)
 })
-
 
 // // Export on https call
 exports.brockAssistantFulfillment = functions.https.onRequest(app)
