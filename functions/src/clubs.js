@@ -8,10 +8,45 @@ const {fetchFromBrockApi, titleCase} = require('./helpers')
 const {defaultErrorResponse, defaultImageUrl} = require('./responses')
 
 
+
+/** Reads clubs to a user when they don't have a screen to view them
+ * 
+ * @param {obj} conv The conversation object
+ * @param {array} foundClubs The filtered arary of found clubs
+ * @since 1.0.0
+ */
+function readClubsToUser(conv, foundClubs) {
+    var clubText = "";
+    foundClubs.map((club, index) => {
+        if (index == (foundClubs.length - 1)) {
+            // Last Club
+            clubText +=  ` ` + club['name'].trim() + `.`
+            return
+        }
+        clubText +=  ` ` + club['name'].trim() + `,`
+    })
+    conv.ask(clubText)
+}
+
+
+/** Reads club details to a user without a screen
+ * 
+ * @param {*} conv The conversation object
+ * @param {*} club 
+ * @since 1.0.0
+ */
+function readClubDetailsToUser(conv, club) {
+    let intro = `Here's the description for the ` + club['name'] + ` club. `
+    let outro = `. For more information visit ExperienceBU.`
+    conv.ask(intro + club['description'] + outro)
+}
+
+
 /** Handles retrieval of all clubs, and search of clubs
  * 
  * @param {*} conv 
  * @param {*} params 
+ * @since 1.0.0
  */
 module.exports.getClubs = function(conv, params) {
     return fetchFromBrockApi('clubs').then((apiResponse => {
@@ -28,7 +63,7 @@ module.exports.getClubs = function(conv, params) {
             return JSON.stringify(club).toLowerCase().indexOf(searchTopic) > -1
         })
         if ( (foundClubs === undefined || foundClubs.length == 0) ) {
-            conv.ask(`Sorry, I could find any clubs related to ` + searchTopic + `. Try saying it another way.`)
+            conv.ask(`Sorry, I could find any clubs related to "` + searchTopic + `". Try saying it another way.`)
             return
         }
         // Map to Object for List structure
@@ -43,7 +78,11 @@ module.exports.getClubs = function(conv, params) {
                 }),
             }
         })
-        conv.ask(`I found ` + foundClubs.length + ` clubs mentioning ` + searchTopic + `. Here are a few:`)
+        conv.ask(`I found ` + foundClubs.length + ` clubs mentioning "` + searchTopic + `". Here are a few:`)
+        if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
+            readClubsToUser(conv, foundClubs)
+            return
+        }
         conv.ask(new List({ title: titleCase(searchTopic) + ' Clubs', items: foundClubsObject }))
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
@@ -65,6 +104,10 @@ module.exports.getClubsDetails = function(conv, params) {
         allClubs.map((club) => {
             if ( slugify(club['name']) === selectedSlug ) {
                 conv.ask(`Here's what I know about ` + club['name'] + `:`)
+                if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
+                    readClubDetailsToUser(conv, club)
+                    return
+                }
                 conv.ask(new BasicCard({
                     text: club['description'],
                     title: club['name'],
