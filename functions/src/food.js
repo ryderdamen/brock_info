@@ -5,7 +5,7 @@
 const {Image, Carousel, BasicCard, Button} = require('actions-on-google')
 const {fetchFromBrockApi} = require('./helpers')
 const slugify = require('slugify')
-const {defaultErrorResponse, defaultImageUrl} = require('./responses')
+const {defaultErrorResponse, defaultImageUrl} = require('./defaults')
 const moment = require('moment')
 
 
@@ -21,11 +21,11 @@ module.exports.getFoodVenues = function(conv, params) {
 
         // User doesn't have a screen, read all the food venues.
         if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
-            let speech = 'Here is a list of food venues on campus. '
+            let speech = `Here's a list of food venues on campus. `
             let foodVenues = apiResponse['food_venues'].map((venue) => {
-                return venue['name'] + ' located in ' + venue['building_name'] + '. '
+                return venue['name'] + ' located in ' + venue['building_name'] + '.'
             })
-            speech += foodVenues
+            speech += foodVenues.join(` `)
             conv.ask(speech)
             return
         }
@@ -106,6 +106,10 @@ function getTodaysHours(venue) {
     let currentWeekday = moment().format('dddd').toLowerCase()
     let openTime = venue['opening_hours'][currentWeekday + 'open']
     let closeTime = venue['opening_hours'][currentWeekday + 'close']
+    if (openTime == "" && closeTime == "") {
+        return "Closed for today."
+    }
+
     let todaysHours = openTime + ` - ` + closeTime
     if (venue['opening_hours']['specialmessage'] !== "") {
         todaysHours += venue['opening_hours']['specialmessage']

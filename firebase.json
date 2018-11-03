@@ -1,1 +1,7 @@
-{}
+{
+    "functions": {
+        "ignore": [
+            "firebase/sampleConfig.js"
+        ]
+    }
+}

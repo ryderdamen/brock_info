@@ -5,7 +5,7 @@
 const {Image, Suggestions, List, BasicCard, Button} = require('actions-on-google')
 const slugify = require('slugify')
 const {fetchFromBrockApi, titleCase} = require('./helpers') 
-const {defaultErrorResponse, defaultImageUrl} = require('./responses')
+const {defaultErrorResponse, defaultImageUrl} = require('./defaults')
 
 
 
@@ -37,7 +37,7 @@ function readClubsToUser(conv, foundClubs) {
  */
 function readClubDetailsToUser(conv, club) {
     let intro = `Here's the description for the ` + club['name'] + ` club. `
-    let outro = `. For more information visit ExperienceBU.`
+    let outro = `. For more information visit Experience B.U.`
     conv.ask(intro + club['description'] + outro)
 }
 

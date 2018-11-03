@@ -1,4 +1,4 @@
-/** responses.js
+/** defaults.js
  * Standardized response strings
  */
 

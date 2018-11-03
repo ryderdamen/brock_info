@@ -16,6 +16,14 @@ module.exports.titleCase = function(str) {
 }
 
 
+/** Determines if a venue is currently open or not
+ * 
+ */
+module.exports.isVenueOpen = function(openTime, closeTime) {
+
+}
+
+
 /** Fetches an endpoint from the Brock API using the config file
  * 
  * @since 1.0.0

@@ -4,7 +4,7 @@
 
 const {Image, BrowseCarousel, BrowseCarouselItem} = require('actions-on-google')
 const {fetchFromBrockApi} = require('./helpers')
-const {defaultErrorResponse, defaultImageUrl} = require('./responses')
+const {defaultErrorResponse, defaultImageUrl} = require('./defaults')
 const moment = require('moment')
 
 
@@ -22,11 +22,11 @@ module.exports.getEvents = function(conv, params) {
     
         // User doesn't have a screen, read the events.
         if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
-            let speech = `Here are the most recent ` + eventLimit + ` events. Visit Experience BU for more information. `
+            let speech = `Here are the most recent ` + eventLimit + ` events. Visit Experience B.U. for more information. `
             let speechEvents = events.map((event) => {
-                return event['event_name'] + ` happening ` + moment(event['start_datetime']).calendar() + `. `
+                return event['event_name'] + ` happening ` + moment(event['start_datetime']).calendar() + `.`
             })
-            speech += speechEvents
+            speech += speechEvents.join(` `)
             conv.ask(speech)
             return
         }
