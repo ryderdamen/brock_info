@@ -21,7 +21,7 @@ module.exports.getFoodVenues = function(conv, params) {
             return venueIsOpen(venue)
         }).slice(0,10)
         if ( (venues === undefined || venues.length == 0) ) {
-            conv.ask(`Sorry, it looks like there aren't any places to eat open right now. Try again later.`)
+            conv.close(`Sorry, it looks like there aren't any places to eat open right now. Try again later.`)
             return
         }
 
@@ -32,7 +32,7 @@ module.exports.getFoodVenues = function(conv, params) {
                 return venue['name'] + ' located in ' + venue['building_name'] + '.'
             })
             speech += foodVenues.join(` `)
-            conv.ask(speech)
+            conv.close(speech)
             return
         }
 
@@ -50,11 +50,11 @@ module.exports.getFoodVenues = function(conv, params) {
             }
             foodCarouselItems[slug] = venueDetails
         })
-        conv.ask(`Here are a few places you can grab a bite.`)
-        conv.ask(new Carousel({items: foodCarouselItems}))
+        conv.close(`Here are a few places open right now.`)
+        conv.close(new Carousel({items: foodCarouselItems}))
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
-        conv.ask(defaultErrorResponse)
+        conv.close(defaultErrorResponse)
     })
 }
 
@@ -75,7 +75,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
             if ( slugify(venue['name']) === selectedSlug ) {
                 let descriptionText = `Today's hours: ` + getTodaysHours(venue) + `  \n`
                 descriptionText += venue['description']
-                conv.ask(`Here's some more info:`)
+                conv.ask(`Here's some more info about ` + venue['name'] + `:`)
                 conv.ask(new BasicCard({
                     text: descriptionText,
                     subtitle: venue['building_name'] + ` (Floor ` + venue['floor_number'] + `)`,
@@ -96,11 +96,11 @@ module.exports.getFoodVenueDetails = function(conv, params) {
             }
         })
         if (foundVenue === false) {
-            conv.ask(`I couldn't find that venue.`)
+            conv.close(`I couldn't find that venue.`)
         }
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
-        conv.ask(defaultErrorResponse)
+        conv.close(defaultErrorResponse)
     })
 }
 

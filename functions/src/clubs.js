@@ -25,7 +25,7 @@ function readClubsToUser(conv, foundClubs) {
         }
         clubText +=  ` ` + club['name'].trim() + `,`
     })
-    conv.ask(clubText)
+    conv.close(clubText)
 }
 
 
@@ -38,7 +38,7 @@ function readClubsToUser(conv, foundClubs) {
 function readClubDetailsToUser(conv, club) {
     let intro = `Here's the description for the ` + club['name'] + ` club. `
     let outro = `. For more information visit Experience B.U.`
-    conv.ask(intro + club['description'] + outro)
+    conv.close(intro + club['description'] + outro)
 }
 
 
@@ -83,10 +83,10 @@ module.exports.getClubs = function(conv, params) {
             readClubsToUser(conv, foundClubs)
             return
         }
-        conv.ask(new List({ title: titleCase(searchTopic) + ' Clubs', items: foundClubsObject }))
+        conv.close(new List({ title: titleCase(searchTopic) + ' Clubs', items: foundClubsObject }))
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
-        conv.ask(defaultErrorResponse)
+        conv.close(defaultErrorResponse)
     })
 }
 
@@ -103,12 +103,12 @@ module.exports.getClubsDetails = function(conv, params) {
         let foundClub = false
         allClubs.map((club) => {
             if ( slugify(club['name']) === selectedSlug ) {
-                conv.ask(`Here's what I know about ` + club['name'] + `:`)
+                conv.close(`Here's what I know about ` + club['name'] + `:`)
                 if ( ! conv.surface.capabilities.has('actions.capability.SCREEN_OUTPUT') ) {
                     readClubDetailsToUser(conv, club)
                     return
                 }
-                conv.ask(new BasicCard({
+                conv.close(new BasicCard({
                     text: club['description'],
                     title: club['name'],
                     buttons: [
@@ -127,11 +127,11 @@ module.exports.getClubsDetails = function(conv, params) {
             }
         })
         if (foundClub === false) {
-            conv.ask(`I couldn't find that club.`)
+            conv.ask(`I couldn't find that club. Try asking for another.`)
         }
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
-        conv.ask(defaultErrorResponse)
+        conv.close(defaultErrorResponse)
     })
 }
 

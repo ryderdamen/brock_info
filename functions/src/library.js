@@ -22,7 +22,7 @@ module.exports.getLibraryOccupancy = function(conv, params) {
                 if (floors[i]['floor'] == requestedFloor) {
                     let speech = 'Floor ' + floors[i]['floor']
                     speech += ' in the library is currently ' + floors[i]['status'].toLowerCase()
-                    conv.ask(speech)
+                    conv.close(speech)
                     return
                 }
             }
@@ -32,11 +32,11 @@ module.exports.getLibraryOccupancy = function(conv, params) {
             let speech = res['library'].map((floor) => {
                 return " Floor " + floor['floor'] + " is " + floor['status'].toLowerCase()
             })
-            conv.ask(`Here's how all the library floors are looking right now.` + speech + '.')
+            conv.close(`Here's how all the library floors are looking right now.` + speech + '.')
             return
         }
-        conv.ask(`Here's how all the library floors are looking right now.`)
-        conv.ask(new Table({
+        conv.close(`Here's how all the library floors are looking right now.`)
+        conv.close(new Table({
             dividers: true,
             columns: ['Library Floor', 'Occupancy'],
             rows: floors.map((floor) => {
@@ -45,6 +45,6 @@ module.exports.getLibraryOccupancy = function(conv, params) {
         }))
     }).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
-        conv.ask(defaultErrorResponse)
+        conv.close(defaultErrorResponse)
     })
 }
