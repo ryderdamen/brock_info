@@ -75,8 +75,8 @@ module.exports.getFoodVenueDetails = function(conv, params) {
             if ( slugify(venue['name']) === selectedSlug ) {
                 let descriptionText = `Today's hours: ` + getTodaysHours(venue) + `  \n`
                 descriptionText += venue['description']
-                conv.ask(`Here's some more info about ` + venue['name'] + `:`)
-                conv.ask(new BasicCard({
+                conv.close(`Here's some more info about ` + venue['name'] + `:`)
+                conv.close(new BasicCard({
                     text: descriptionText,
                     subtitle: venue['building_name'] + ` (Floor ` + venue['floor_number'] + `)`,
                     title: venue['name'],
@@ -96,7 +96,7 @@ module.exports.getFoodVenueDetails = function(conv, params) {
             }
         })
         if (foundVenue === false) {
-            conv.close(`I couldn't find that venue.`)
+            conv.ask(`I couldn't find that venue, try selecting something else.`)
         }
     })).catch((apiError) => {
         console.error('Unable to retrieve response: ' + apiError)
