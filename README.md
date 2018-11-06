@@ -58,4 +58,6 @@ The following is a list of all responses the fulfillment currently supports, and
 ## To Do
 * Update API - Too slow currently, needs to run on a different server
     * Maybe cloud functions? Cron job, store data somewhere else
+    * Needs ability to retrieve events by date
+    * Needs caching ability
 * Complete all response Todos
